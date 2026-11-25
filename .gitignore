@@ -1,0 +1,38 @@
+# Archivos locales pesados y bases de datos en tiempo de ejecución
+Instalador-Clima.zip
+*.rar
+*.exe
+*.ocx
+*.dll
+*.dat
+*.ndx
+*.nom
+SHC/
+Lib/
+data/hidroclima.db
+data/hidroclima.db-*
+data/climapro.db
+data/climapro.db-*
+
+# Python / venv / caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.egg-info/
+*.egg-info/
+*.spec
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.cache/
+
+# Exports & temporary user files
+Ejemplo_manuales/
+cotageo-portal/
+/exports/
+*.log
+.DS_Store
+Thumbs.db

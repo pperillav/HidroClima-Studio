@@ -1,0 +1,34 @@
+{
+  "format": "hidroclima-project",
+  "version": "1.0.0",
+  "name": "Ejemplo Bogotá D.C. (El Dorado – Cerros Orientales)",
+  "description": "Corredor hidrometeorológico y geotécnico de referencia en Bogotá D.C. (2005–2025)",
+  "location": "Bogotá D.C., Colombia",
+  "soil_max_reserve_mm": 100.0,
+  "water_table_m": 10.0,
+  "end_year": 2025,
+  "last_n_years": 0,
+  "etp_method": "penman_monteith",
+  "study_profile": "integral",
+  "idf_method": "invias",
+  "idf_region": "Andina",
+  "hyetograph_tr": 10,
+  "hyetograph_duration_min": 60,
+  "watershed_area_km2": 1.2,
+  "watershed_length_m": 950.0,
+  "watershed_slope_pct": 6.5,
+  "curve_number": 75.0,
+  "runoff_coeff": 0.52,
+  "sgc_r3_intercept": 70.0,
+  "sgc_r15_slope": 0.47,
+  "stations": [
+    { "codigo": "21205791", "weight": 0.5 },
+    { "codigo": "21205580", "weight": 0.5 }
+  ],
+  "route_coords": [
+    [4.7056, -74.1507],
+    [4.6693, -74.1027],
+    [4.6381, -74.0891],
+    [4.5984, -74.0616]
+  ]
+}

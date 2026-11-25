@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Corredor Vial y Ambiental Bogotá D.C. (El Dorado - Cerros Orientales)</name>
+    <Placemark>
+      <name>Eje Corredor Bogotá D.C.</name>
+      <LineString>
+        <coordinates>
+          -74.1507,4.7056,2547
+          -74.1027,4.6693,2552
+          -74.0891,4.6381,2556
+          -74.0616,4.5984,2725
+        </coordinates>
+      </LineString>
+    </Placemark>
+  </Document>
+</kml>

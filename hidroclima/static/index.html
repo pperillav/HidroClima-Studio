@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HidroClima Studio — Hidrología IDF, Balance Hídrico, Climatología y Pavimentos</title>
+  <link rel="icon" type="image/x-icon" href="/static/hidroclima_studio.ico" />
+  <link rel="stylesheet" href="/static/vendor/leaflet.css" />
+  <link rel="stylesheet" href="/static/vendor/MarkerCluster.css" />
+  <link rel="stylesheet" href="/static/vendor/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+  <div class="desktop-chrome">
+    <nav class="menubar" id="desktopMenubar" aria-label="Menú principal">
+      <div class="menubar-items">
+        <div class="menu-root">
+          <button type="button" class="menu-root-btn">Archivo</button>
+          <div class="menu-dropdown">
+            <button type="button" class="menu-item" data-menu-act="new_project"><span class="menu-icon">📄</span><span class="menu-lbl">Nuevo Proyecto en Blanco</span></button>
+            <button type="button" class="menu-item" data-menu-act="open_projects"><span class="menu-icon">📂</span><span class="menu-lbl">Abrir Proyecto / Importar .hclim...</span></button>
+            <button type="button" class="menu-item" data-menu-act="save_project"><span class="menu-icon">💾</span><span class="menu-lbl">Guardar Proyecto Actual</span></button>
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-item" data-menu-act="export_pdf"><span class="menu-icon">📕</span><span class="menu-lbl">Exportar Informe Técnico (.pdf)</span></button>
+            <button type="button" class="menu-item" data-menu-act="export_xlsx"><span class="menu-icon">📊</span><span class="menu-lbl">Exportar Libro Excel Formulado (.xlsx)</span></button>
+            <button type="button" class="menu-item" data-menu-act="export_docx"><span class="menu-icon">📝</span><span class="menu-lbl">Exportar Informe Word (.docx)</span></button>
+          </div>
+        </div>
+
+        <div class="menu-root">
+          <button type="button" class="menu-root-btn">Análisis</button>
+          <div class="menu-dropdown">
+            <button type="button" class="menu-item" data-menu-act="run_analysis"><span class="menu-icon">▶️</span><span class="menu-lbl">Ejecutar Análisis Completo</span><span class="menu-shortcut">Ctrl+Enter</span></button>
+            <button type="button" class="menu-item" data-menu-act="run_cauca"><span class="menu-icon">⚡</span><span class="menu-lbl">Cargar y Ejecutar Ejemplo Bogotá</span></button>
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-item" data-menu-act="weights_idw"><span class="menu-icon">📍</span><span class="menu-lbl">Calcular Pesos IDW (p=2)</span></button>
+            <button type="button" class="menu-item" data-menu-act="weights_thiessen"><span class="menu-icon">📐</span><span class="menu-lbl">Calcular Polígonos de Thiessen</span></button>
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-item" data-menu-act="sub_idf"><span class="menu-icon">🌧️</span><span class="menu-lbl">Hidrología IDF y Hietograma RAS/INVIAS</span></button>
+            <button type="button" class="menu-item" data-menu-act="sub_geo"><span class="menu-icon">⛰️</span><span class="menu-lbl">Cuenca INVIAS/SCS y Geotecnia SGC</span></button>
+            <button type="button" class="menu-item" data-menu-act="sub_pav"><span class="menu-icon">🛣️</span><span class="menu-lbl">Pavimentos: 1. TMAP · 2. PMA · PG</span></button>
+            <button type="button" class="menu-item" data-menu-act="sub_rusle"><span class="menu-icon">🌱</span><span class="menu-lbl">Erosividad RUSLE y Calidad ETCCDI</span></button>
+            <button type="button" class="menu-item" data-menu-act="sub_spei"><span class="menu-icon">📉</span><span class="menu-lbl">Sequías SPEI-3/12 e IAP IDEAM</span></button>
+            <button type="button" class="menu-item" data-menu-act="tab_tw"><span class="menu-icon">🧮</span><span class="menu-lbl">Calculadora Thornthwaite Mensual</span></button>
+          </div>
+        </div>
+
+        <div class="menu-root">
+          <button type="button" class="menu-root-btn">Datos</button>
+          <div class="menu-dropdown">
+            <button type="button" class="menu-item" data-menu-act="tab_gis"><span class="menu-icon">🗺️</span><span class="menu-lbl">Explorador GIS y Red de Estaciones</span></button>
+            <button type="button" class="menu-item" data-menu-act="tab_bridge"><span class="menu-icon">🛰️</span><span class="menu-lbl">Puentes En Vivo (IDEAM / ERA5 / NASA)</span></button>
+            <button type="button" class="menu-item" data-menu-act="tab_bridge"><span class="menu-icon">📥</span><span class="menu-lbl">Importador DHIME / Histórico .dat / .zip</span></button>
+            <button type="button" class="menu-item" data-menu-act="tab_bridge"><span class="menu-icon">✏️</span><span class="menu-lbl">Editor Diario Matriz 12×31</span></button>
+          </div>
+        </div>
+
+        <div class="menu-root">
+          <button type="button" class="menu-root-btn">Ver</button>
+          <div class="menu-dropdown">
+            <button type="button" class="menu-item" data-menu-act="toggle_theme"><span class="menu-icon">🌓</span><span class="menu-lbl">Alternar Tema Claro / Oscuro</span></button>
+            <button type="button" class="menu-item" data-menu-act="fit_colombia"><span class="menu-icon">🇨🇴</span><span class="menu-lbl">Centrar Mapa en Colombia</span></button>
+            <button type="button" class="menu-item" data-menu-act="toggle_idf_scale"><span class="menu-icon">📈</span><span class="menu-lbl">Alternar Escala IDF Log-Log / Lineal</span></button>
+            <button type="button" class="menu-item" data-menu-act="tab_exports"><span class="menu-icon">📤</span><span class="menu-lbl">Centro de Informes y Exportaciones</span></button>
+          </div>
+        </div>
+
+        <div class="menu-root">
+          <button type="button" class="menu-root-btn">Ayuda</button>
+          <div class="menu-dropdown">
+            <div class="menu-subwrap">
+              <button type="button" class="menu-item" data-menu-act="help:workflow"><span class="menu-icon">📖</span><span class="menu-lbl">Documentación y Manuales PDF</span><span class="menu-arrow">▶</span></button>
+              <div class="menu-subdropdown">
+                <button type="button" class="menu-item" data-menu-act="help:workflow"><span class="menu-lbl">Centro de Ayuda Interactivo</span><span class="menu-shortcut">F1</span></button>
+                <div class="menu-divider"></div>
+                <button type="button" class="menu-item" data-menu-act="pdf_general"><span class="menu-lbl">📕 01. Manual Información General (PDF)</span></button>
+                <button type="button" class="menu-item" data-menu-act="pdf_tutorial"><span class="menu-lbl">📕 02. Manual Tutorial y Casos (PDF)</span></button>
+                <button type="button" class="menu-item" data-menu-act="pdf_scientific"><span class="menu-lbl">📕 03. Manual Científico y Ecuaciones (PDF)</span></button>
+                <button type="button" class="menu-item" data-menu-act="pdf_reference"><span class="menu-lbl">📕 04. Referencia y Verificación (PDF)</span></button>
+                <div class="menu-divider"></div>
+                <button type="button" class="menu-item" data-menu-act="help:exports_catalog"><span class="menu-lbl">Qué Genera Cada Exportación (17)</span></button>
+              </div>
+            </div>
+
+            <div class="menu-subwrap">
+              <button type="button" class="menu-item" data-menu-act="help:workflow"><span class="menu-icon">🎓</span><span class="menu-lbl">Contenido de Aprendizaje</span><span class="menu-arrow">▶</span></button>
+              <div class="menu-subdropdown">
+                <button type="button" class="menu-item" data-menu-act="help:workflow"><span class="menu-lbl">Flujo Paso a Paso (6 Pasos)</span></button>
+                <button type="button" class="menu-item" data-menu-act="run_cauca"><span class="menu-lbl">Ejecutar Demo Bogotá D.C.</span></button>
+                <button type="button" class="menu-item" data-menu-act="help:classifications"><span class="menu-lbl">Guía EIA ANLA / POMCA / ENA</span></button>
+                <button type="button" class="menu-item" data-menu-act="help:rusle_spei"><span class="menu-lbl">Guía Erosividad RUSLE y Sequías SPEI</span></button>
+              </div>
+            </div>
+
+            <button type="button" class="menu-item" data-menu-act="help:licenses_sources"><span class="menu-icon">🔓</span><span class="menu-lbl">Licencia y Datos Abiertos...</span></button>
+            <button type="button" class="menu-item" data-menu-act="help:bridges_data"><span class="menu-icon">🛰️</span><span class="menu-lbl">Puentes y Actualizaciones de Datos...</span></button>
+
+            <div class="menu-subwrap">
+              <button type="button" class="menu-item" data-menu-act="help:licenses_sources"><span class="menu-icon">ℹ️</span><span class="menu-lbl">Acerca de HidroClima Studio</span><span class="menu-arrow">▶</span></button>
+              <div class="menu-subdropdown">
+                <button type="button" class="menu-item" data-menu-act="help:licenses_sources"><span class="menu-lbl">Versión 1.0.0 · Arquitectura y MIT</span></button>
+                <button type="button" class="menu-item" data-menu-act="help:gis_spatial"><span class="menu-lbl">Catálogo Nacional (8.973 est.)</span></button>
+              </div>
+            </div>
+
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-item" data-menu-act="open_github"><span class="menu-icon">🎧</span><span class="menu-lbl">Documentación Web y Soporte GitHub</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="menubar-right-hint">Presiona <strong>F1</strong> para abrir el Manual de Funciones y Fórmulas</div>
+    </nav>
+
+    <header class="topbar">
+    <div class="brand">
+      <img class="brand-logo-img" src="/static/logo_mark_dark.png" alt="HidroClima Studio" />
+      <div class="brand-text">
+        <div class="brand-title">HidroClima Studio <span class="badge-ver" id="appVersion">v1.0.0</span></div>
+        <div class="brand-sub">Hidrología IDF · Geotecnia SGC · Balance Hídrico · Pavimentos TMAP</div>
+      </div>
+    </div>
+
+    <div class="topbar-center">
+      <div class="project-pill">
+        <span class="dot-status"></span>
+        <span id="activeProjectLabel">Proyecto: Ejemplo Bogotá D.C.</span>
+      </div>
+      <div class="db-pill" id="dbStatsPill">Cargando catálogo...</div>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" id="btnOpenProjects" title="Abrir o gestionar proyectos">Proyectos</button>
+      <button class="btn btn-ghost btn-sm" id="btnSaveProject" title="Guardar proyecto actual">Guardar</button>
+      <button class="btn btn-accent btn-sm" id="btnQuickSync" title="Sincronizar o importar datos">Actualizar Datos</button>
+      <button class="btn btn-primary btn-sm" id="btnRunAnalysisTop" title="Ejecutar análisis completo (Ctrl+Enter)">▶ Calcular Análisis</button>
+      <button class="btn btn-ghost btn-sm" type="button" id="btnTopHelp" data-menu-act="help:workflow" title="Centro de Ayuda y Referencia Técnica (F1)">? Ayuda</button>
+      <button class="btn btn-ghost btn-icon" id="btnThemeToggle" title="Cambiar tema claro/oscuro">◐</button>
+    </div>
+  </header>
+  </div>
+
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" data-tab="tab-gis">1. Área GIS, Corredor y Red</button>
+    <button class="nav-tab" data-tab="tab-results">2. Climatología, Sequías y RUSLE</button>
+    <button class="nav-tab" data-tab="tab-eng">3. Hidrología IDF, Cuenca SGC y Pavimentos</button>
+    <button class="nav-tab" data-tab="tab-thornthwaite">4. Thornthwaite Mensual</button>
+    <button class="nav-tab" data-tab="tab-bridge">5. Puente de Datos y Editor</button>
+    <button class="nav-tab" data-tab="tab-exports">6. Informes y Exportaciones</button>
+  </nav>
+
+  <main class="main-container">
+    <!-- TAB 1: GIS, CORRIDOR & PROJECT -->
+    <section id="tab-gis" class="tab-panel active">
+      <div class="split-layout">
+        <aside class="panel-sidebar">
+          <details class="card inspector-card" open>
+            <summary class="inspector-summary">
+              <span>Parámetros de Simulación y Modelo <button type="button" class="help-tip" data-help="climate_balance" title="Ayuda sobre parámetros del modelo">?</button></span>
+              <button type="button" class="btn btn-xs btn-ghost" id="btnLoadSampleCauca">Cargar Ejemplo Bogotá</button>
+            </summary>
+            <div class="inspector-body">
+              <div class="form-grid-2">
+                <div class="inspector-group-title">Identificación y Ventana Temporal</div>
+                <div class="field full">
+                  <label>Nombre del Proyecto / Estudio</label>
+                  <input type="text" id="projName" value="Ejemplo Bogotá D.C. (El Dorado – Cerros Orientales)" />
+                </div>
+                <div class="field">
+                  <label>Ubicación</label>
+                  <input type="text" id="projLocation" value="Bogotá D.C., Colombia" />
+                </div>
+                <div class="field">
+                  <label>Enfoque del Estudio</label>
+                  <select id="projStudyProfile">
+                    <option value="integral">Integral Multidisciplinario</option>
+                    <option value="hidrologia">Hidrología y Drenaje (RAS / INVIAS)</option>
+                    <option value="ambiental">Ambiental (EIA ANLA / POMCA / RUSLE)</option>
+                    <option value="geotecnia">Geotecnia SGC y Taludes</option>
+                    <option value="pavimentos">Pavimentos (TMAP / PMA / Superpave)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Año Final Serie</label>
+                  <input type="number" id="projEndYear" value="2026" min="1900" max="2035" />
+                </div>
+                <div class="field">
+                  <label>Últimos N Años (0=Todos)</label>
+                  <input type="number" id="projLastNYears" value="0" min="0" max="150" />
+                </div>
+
+                <div class="inspector-group-title">Balance Hídrico, Suelo y Pavimentos</div>
+                <div class="field full">
+                  <label>Método Evapotranspiración (ETP)</label>
+                  <select id="projEtpMethod">
+                    <option value="penman_monteith">Penman - Monteith (FAO-56)</option>
+                    <option value="thornthwaite">Thornthwaite (Índice de Calor 1948)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Reserva Máx. Suelo (mm)</label>
+                  <input type="number" id="projSoilReserve" value="100" min="10" max="500" step="5" />
+                </div>
+                <div class="field">
+                  <label>Nivel Freático MEPDG (m)</label>
+                  <input type="number" id="projWaterTable" value="10" min="0" max="100" step="0.5" />
+                </div>
+
+                <div class="inspector-group-title">Hidrología Extrema y Curvas IDF <button type="button" class="help-tip" data-help="idf_hydrology" title="Ver metodologías IDF y RAS">?</button></div>
+                <div class="field">
+                  <label>Método Curvas IDF</label>
+                  <select id="projIdfMethod">
+                    <option value="invias">INVIAS Regionalizado (Vargas &amp; D-G)</option>
+                    <option value="silva">Gustavo Silva (P24h → P1h)</option>
+                    <option value="sherman">Sherman (k·Tr^m / (t+c)^n)</option>
+                    <option value="bell">Bell (1969) Generalizada</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Región IDF (INVIAS)</label>
+                  <select id="projIdfRegion">
+                    <option value="">Auto-detectar</option>
+                    <option value="Andina">Andina (R1)</option>
+                    <option value="Caribe">Caribe (R2)</option>
+                    <option value="Pacífico">Pacífico (R3)</option>
+                    <option value="Orinoquía">Orinoquía-Amazonía (R4)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Tr Hietograma (años)</label>
+                  <select id="projHyetTr">
+                    <option value="5">5 años</option>
+                    <option value="10" selected>10 años</option>
+                    <option value="25">25 años</option>
+                    <option value="50">50 años</option>
+                    <option value="100">100 años</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Duración Tormenta (min)</label>
+                  <select id="projHyetDur">
+                    <option value="60" selected>60 min</option>
+                    <option value="90">90 min</option>
+                    <option value="120">120 min</option>
+                    <option value="180">180 min</option>
+                  </select>
+                </div>
+
+                <div class="inspector-group-title">Cuenca Hidrográfica (INVIAS) y Umbral SGC <button type="button" class="help-tip" data-help="geotecnia_sgc" title="Ver metodología Cuenca y SGC">?</button></div>
+                <div class="field">
+                  <label>Área Cuenca (km²)</label>
+                  <input type="number" id="projWatershedArea" value="1.0" min="0.01" step="0.1" />
+                </div>
+                <div class="field">
+                  <label>Longitud Cauce (m)</label>
+                  <input type="number" id="projWatershedLength" value="800" min="20" step="50" />
+                </div>
+                <div class="field">
+                  <label>Pendiente (%) / CN II</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+                    <input type="number" id="projWatershedSlope" value="5.0" min="0.1" step="0.5" title="Pendiente media (%)" />
+                    <input type="number" id="projCurveNumber" value="75" min="30" max="98" step="1" title="Número de Curva CN II" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Coef. C / SGC a−b·R15</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+                    <input type="number" id="projRunoffCoeff" value="0.50" min="0.05" max="0.98" step="0.05" title="Coeficiente de escorrentía Racional C" />
+                    <input type="number" id="projSgcIntercept" value="70" min="10" max="300" step="5" title="Intercepto SGC R3 (mm)" />
+                    <input type="number" id="projSgcSlope" value="0.47" min="0.05" max="1.5" step="0.01" title="Pendiente SGC R15" />
+                  </div>
+                </div>
+                <div class="field full">
+                  <label>Descripción / Alcance</label>
+                  <input type="text" id="projDesc" value="Caracterización hidrometeorológica y diseño de ingeniería" />
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Estaciones del Proyecto (<span id="selectedCount">0</span>)</h3>
+              <div class="btn-group">
+                <button class="btn btn-xs btn-ghost" id="btnWeightEqual" title="Pesos iguales">Igual</button>
+                <button class="btn btn-xs btn-ghost" id="btnWeightIDW" title="Distancia Inversa Ponderada">IDW</button>
+                <button class="btn btn-xs btn-ghost" id="btnWeightThiessen" title="Polígonos de Thiessen">Thiessen</button>
+                <button class="btn btn-xs btn-danger-ghost" id="btnClearStations">Limpiar</button>
+              </div>
+            </div>
+            <div class="table-wrap max-h-220">
+              <table class="data-table" id="selectedStationsTable">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Estación</th>
+                    <th>Peso</th>
+                    <th>Datos</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="card-footer-cta">
+              <button class="btn btn-primary full-width" id="btnCalculateMain">▶ Ejecutar Análisis Completo</button>
+            </div>
+          </div>
+
+          <details class="card inspector-card" open>
+            <summary class="inspector-summary">
+              <span>Rastreo y Filtros del Catálogo (8.973 est.)</span>
+              <button type="button" class="btn btn-xs btn-ghost" id="btnResetFilters">Restablecer</button>
+            </summary>
+            <div class="inspector-body">
+              <div class="form-grid-2">
+                <div class="field full">
+                  <label>Búsqueda (Código, Nombre, Municipio, Corriente)</label>
+                  <input type="text" id="filterQuery" placeholder="Ej: Eldorado, 21205791, Venado de Oro..." />
+                </div>
+                <div class="field">
+                  <label>Departamento</label>
+                  <select id="filterDepto"><option value="">Todos</option></select>
+                </div>
+                <div class="field">
+                  <label>Municipio</label>
+                  <select id="filterMun"><option value="">Todos</option></select>
+                </div>
+                <div class="field">
+                  <label>Categoría</label>
+                  <select id="filterCat"><option value="">Todas</option></select>
+                </div>
+                <div class="field">
+                  <label>Estado</label>
+                  <select id="filterEstado">
+                    <option value="">Todos</option>
+                    <option value="Activa">Activa</option>
+                    <option value="Suspendida">Suspendida</option>
+                  </select>
+                </div>
+                <div class="field full checkbox-row">
+                  <label class="checkbox-inline">
+                    <input type="checkbox" id="filterOnlyWithData" /> Solo estaciones con series locales disponibles
+                  </label>
+                </div>
+                <div class="field">
+                  <label>Radio / Buffer Corredor (km)</label>
+                  <input type="number" id="filterBufferKm" value="15" min="1" max="200" />
+                </div>
+                <div class="field align-end">
+                  <button class="btn btn-secondary full-width" id="btnSearchStations">🔎 Buscar Estaciones</button>
+                </div>
+              </div>
+            </div>
+          </details>
+        </aside>
+
+        <div class="panel-map-area">
+          <!-- BARRA PROMINENTE DE CORREDOR / ÁREA DE ESTUDIO -->
+          <div class="corridor-bar">
+            <div class="corridor-bar-top">
+              <div class="corridor-title">
+                <span>Corredor / Área de Estudio (KML · KMZ · GeoJSON · Dibujo)</span>
+                <span class="badge-info" id="routeStatusBadge">Sin corredor activo</span>
+              </div>
+              <div class="btn-row">
+                <label class="btn btn-xs btn-primary file-btn" title="Importar trazado o polígono desde archivo">
+                  Cargar KML / KMZ / GeoJSON
+                  <input type="file" id="inputRouteFile" accept=".kml,.kmz,.geojson,.json" hidden />
+                </label>
+                <button class="btn btn-xs btn-accent" id="btnDrawRoute" title="Trazar puntos directamente sobre el mapa">Dibujar en Mapa</button>
+                <button class="btn btn-xs btn-primary" id="btnFinishDraw" style="display:none">✓ Finalizar Trazo</button>
+                <button class="btn btn-xs btn-secondary" id="btnLoadSampleRoute">Ruta Demo Bogotá – Cerros</button>
+                <button class="btn btn-xs btn-ghost" id="btnTogglePasteCoords">Pegar Coordenadas</button>
+                <button class="btn btn-xs btn-danger-ghost" id="btnClearRoute">Limpiar Ruta</button>
+              </div>
+            </div>
+            <div class="corridor-paste-box" id="corridorPasteBox">
+              <textarea id="pasteKmlCoords" rows="2" placeholder="Pega coordenadas KML (-74.1507,4.7056,0 ...) o pares lat, lon por línea..."></textarea>
+              <button class="btn btn-xs btn-secondary" id="btnParsePastedRoute">Aplicar Coordenadas</button>
+            </div>
+          </div>
+
+          <div class="map-toolbar">
+            <div class="map-legend">
+              <span id="mapResultInfo" style="font-weight:700;color:var(--text)">Mostrando estaciones en mapa</span>
+              <span><i class="leg-dot" style="background:#00897b"></i>Seleccionada</span>
+              <span><i class="leg-dot" style="background:#0072b2"></i>Con series locales</span>
+              <span><i class="leg-dot" style="background:#d97706"></i>Activa</span>
+              <span class="map-coord-readout" id="mapCoordReadout">Cursor: --°, --°</span>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-xs btn-secondary" id="btnAddVisibleToProject">+ Agregar Filtradas (máx 10)</button>
+              <button class="btn btn-xs btn-ghost" id="btnFitColombia">Centrar Colombia</button>
+            </div>
+          </div>
+
+          <div id="leafletMap"></div>
+
+          <div class="card map-results-drawer">
+            <div class="card-header">
+              <h4>Estaciones Encontradas (<span id="foundCount">0</span>)</h4>
+              <span class="hint">Clic en "+ Proyecto" para incluir o en el marcador del mapa para inspeccionar detalles y cercanía automática</span>
+            </div>
+            <div class="table-wrap max-h-180">
+              <table class="data-table" id="foundStationsTable">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Cat</th>
+                    <th>Municipio / Depto</th>
+                    <th>Alt (m)</th>
+                    <th>Estado</th>
+                    <th>Dist (km)</th>
+                    <th>Series Locales</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: RESULTS & CLIMATOLOGY -->
+    <section id="tab-results" class="tab-panel">
+      <div id="resultsEmptyState" class="empty-state">
+        <h3>Aún no has ejecutado un análisis</h3>
+        <p>Selecciona estaciones en <strong>1. Área GIS, Corredor y Red</strong> y haz clic en <strong>▶ Ejecutar Análisis Completo</strong>.</p>
+      </div>
+      <div id="resultsContent" style="display:none">
+        <div class="kpi-grid" id="kpiStrip"></div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-header">
+            <h3>Clasificaciones Climáticas Oficiales (EIA ANLA · POMCA · ENA-IDEAM)</h3>
+            <span class="badge-info" id="badgeThornthwaiteClass"></span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="tableClassifications"></table>
+          </div>
+        </div>
+
+        <div class="subtabs">
+          <button class="subtab active" data-subtab="sub-climate">Climograma y Balance Hídrico</button>
+          <button class="subtab" data-subtab="sub-series">Series Históricas, SPEI y Sequías</button>
+          <button class="subtab" data-subtab="sub-daily">Promedios Diarios (365 días)</button>
+          <button class="subtab" data-subtab="sub-quality">Erosividad RUSLE, Pettitt y ETCCDI</button>
+        </div>
+
+        <div id="sub-climate" class="subtab-panel active">
+          <div class="charts-2col">
+            <div class="card">
+              <div class="card-header"><h3>Climograma Mensual Multianual</h3></div>
+              <div id="chartClimograph" class="chart-box"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Balance Hídrico Mensual (ETP, Almacenamiento, Exceso/Déficit)</h3></div>
+              <div id="chartWaterBalance" class="chart-box"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Tabla Climatológica y Balance Hídrico Mensual</h3></div>
+            <div class="table-wrap">
+              <table class="data-table numeric-table" id="tableMonthlySummary"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="sub-series" class="subtab-panel">
+          <div class="charts-2col">
+            <div class="card">
+              <div class="card-header"><h3>Serie Anual Histórica (Precipitación y Temperatura)</h3></div>
+              <div id="chartAnnualSeries" class="chart-box"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Explorador Diario Interactivo (Zoom Temporal)</h3></div>
+              <div id="chartDailyExplorer" class="chart-box"></div>
+            </div>
+          </div>
+          <div class="charts-2col" style="margin-top:12px">
+            <div class="card">
+              <div class="card-header">
+                <h3>Monitoreo de Sequías SPEI-3 / SPEI-12 (Vicente-Serrano)</h3>
+                <span class="badge-info" id="badgeSpeiSummary"></span>
+              </div>
+              <div id="chartSpeiDrought" class="chart-box"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Anomalías de Precipitación Anual IDEAM (IAP %)</h3></div>
+              <div id="chartIapAnnual" class="chart-box"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Resumen Anual por Año</h3></div>
+            <div class="table-wrap max-h-320">
+              <table class="data-table numeric-table" id="tableAnnualSummary"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="sub-daily" class="subtab-panel">
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-header"><h3>Ciclo Anual Diario Promedio (365 días)</h3></div>
+            <div id="chartDailyClimatology" class="chart-box"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Tabla de Promedios Diarios Multianuales</h3></div>
+            <div class="table-wrap max-h-380">
+              <table class="data-table numeric-table" id="tableDailyClimatology"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="sub-quality" class="subtab-panel">
+          <div class="charts-2col">
+            <div class="card">
+              <div class="card-header"><h3>Mapa de Calor de Completitud (% por Año y Variable)</h3></div>
+              <div id="chartCompleteness" class="chart-box"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Homogeneidad (Pettitt), Tendencias (Mann-Kendall) e Índices ETCCDI</h3></div>
+              <div id="qualityTrendsBox" class="trends-box"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Resumen de Calidad por Variable</h3></div>
+            <div class="table-wrap">
+              <table class="data-table numeric-table" id="tableQualitySummary"></table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="card-header">
+              <h3>Erosividad Pluvial RUSLE (ANLA) — Fournier (FI / MFI), PCI y Factor R</h3>
+              <span class="badge-info" id="badgeRusleClass"></span>
+            </div>
+            <div class="kpi-grid" id="rusleKpiStrip"></div>
+            <div class="charts-2col" style="margin-bottom:0">
+              <div id="chartRusleMonthly" class="chart-box"></div>
+              <div class="table-wrap max-h-380">
+                <table class="data-table numeric-table" id="tableRusleMonthly"></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: HYDROLOGY IDF, WATERSHED/SGC & PAVEMENTS -->
+    <section id="tab-eng" class="tab-panel">
+      <div id="engEmptyState" class="empty-state">
+        <h3>Ejecuta primero el análisis climático</h3>
+        <p>Aquí se presentan las curvas IDF (INVIAS, Gustavo Silva, Sherman, Bell), bondad de ajuste K-S, hietograma de diseño, <strong>Cuenca INVIAS/SCS-CN</strong>, <strong>Geotecnia SGC (lluvias detonantes)</strong> y los parámetros de ingeniería de pavimentos (<strong>1. TMAP</strong>, <strong>2. PMA</strong>, región INVIAS R1–R6 y Superpave PG).</p>
+      </div>
+      <div id="engContent" style="display:none">
+        <div class="pav-banner" id="pavSummaryBanner"></div>
+        <div class="kpi-grid" id="engKpiStrip"></div>
+
+        <div class="subtabs">
+          <button class="subtab active" data-subtab="sub-eng-idf">Curvas IDF, Hietograma y RAS/INVIAS</button>
+          <button class="subtab" data-subtab="sub-eng-geo">Cuenca INVIAS/SCS y Geotecnia SGC</button>
+          <button class="subtab" data-subtab="sub-eng-pav">Pavimentos: 1. TMAP · 2. PMA · Superpave PG</button>
+        </div>
+
+        <div id="sub-eng-idf" class="subtab-panel active">
+          <div class="charts-2col">
+            <div class="card">
+              <div class="card-header">
+                <h3>Curvas Intensidad-Duración-Frecuencia (IDF)</h3>
+                <div class="btn-row">
+                  <span class="badge-info" id="badgeIdfFormula"></span>
+                  <button class="btn btn-xs btn-secondary" id="btnToggleIdfScale" title="Alternar eje Log-Log / Lineal">Escala Log-Log</button>
+                </div>
+              </div>
+              <div id="chartIdfCurves" class="chart-box"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Frecuencia P24h: Gumbel, Log-Normal, LP-III, GEV y Gringorten</h3></div>
+              <div id="chartGumbel" class="chart-box"></div>
+            </div>
+          </div>
+
+          <div class="charts-2col">
+            <div class="card">
+              <div class="card-header"><h3>Hietograma de Tormenta de Diseño (Bloques Alternos)</h3></div>
+              <div id="chartHyetograph" class="chart-box"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Índice Estandarizado de Precipitación (SPI-3 y SPI-12)</h3></div>
+              <div id="chartSpi" class="chart-box"></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-header"><h3>Bondad de Ajuste Kolmogorov-Smirnov (P24h máx)</h3></div>
+            <div class="table-wrap">
+              <table class="data-table numeric-table" id="tableDistributionsKS"></table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-header"><h3>Tabla de Intensidades IDF (mm/h)</h3></div>
+            <div class="table-wrap">
+              <table class="data-table numeric-table" id="tableIdfMatrix"></table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h3>Evaluación Normativa RAS (Res. 0330/2017) y Manual de Drenaje INVIAS</h3></div>
+            <div class="table-wrap">
+              <table class="data-table numeric-table" id="tableNormativeRasInvias"></table>
+            </div>
+          </div>
+        </div>
+
+        <div id="sub-eng-geo" class="subtab-panel">
+          <div class="charts-2col">
+            <div class="card">
+              <div class="card-header">
+                <h3>Cuenca Hidrográfica (INVIAS / Kirpich / Racional / SCS-CN)</h3>
+                <button class="btn btn-xs btn-primary" id="btnRecalcWatershed">Recalcular Caudales</button>
+              </div>
+              <div class="form-grid-2" style="margin-bottom:10px">
+                <div class="field full">
+                  <label>Cobertura / Uso Suelo Preestablecido (CN II y C)</label>
+                  <select id="wsCnPreset">
+                    <option value="">Personalizado</option>
+                    <option value="60,0.28">Bosque denso / Selva andina (CN=60, C=0.28)</option>
+                    <option value="72,0.42">Pastos y rastrojo medio (CN=72, C=0.42)</option>
+                    <option value="78,0.52">Cultivos / Suelo agrícola (CN=78, C=0.52)</option>
+                    <option value="86,0.72">Suelo desnudo / Talud vial (CN=86, C=0.72)</option>
+                    <option value="92,0.85">Urbano / Pavimento impermeable (CN=92, C=0.85)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Área A (km²)</label>
+                  <input type="number" id="wsAreaKm2" value="1.0" min="0.001" step="0.1" />
+                </div>
+                <div class="field">
+                  <label>Longitud Cauce L (m)</label>
+                  <input type="number" id="wsLengthM" value="800" min="20" step="50" />
+                </div>
+                <div class="field">
+                  <label>Pendiente S (%) / CN II</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+                    <input type="number" id="wsSlopePct" value="5.0" min="0.1" step="0.5" />
+                    <input type="number" id="wsCn" value="75" min="30" max="98" step="1" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Coef. Racional C</label>
+                  <input type="number" id="wsCoeffC" value="0.50" min="0.05" max="0.98" step="0.05" />
+                </div>
+              </div>
+              <div class="kpi-grid" id="watershedKpiStrip"></div>
+              <div class="table-wrap">
+                <table class="data-table numeric-table" id="tableWatershedDesign"></table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Geotecnia SGC: Umbral Detonante de Movimientos en Masa</h3>
+                <span class="badge-info" id="badgeSgcThreshold"></span>
+              </div>
+              <div class="kpi-grid" id="sgcKpiStrip"></div>
+              <div id="chartSgcThresholds" class="chart-box" style="height:310px"></div>
+            </div>
+          </div>
+
+          <div class="charts-2col">
+            <div class="card">
+              <div class="card-header"><h3>Ventanas de Lluvia Antecedente SGC (R1, R3, R7, R15, R30, R90)</h3></div>
+              <div class="table-wrap">
+                <table class="data-table numeric-table" id="tableSgcRolling"></table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Episodios Históricos Críticos de Excedencia SGC</h3></div>
+              <div class="table-wrap max-h-260">
+                <table class="data-table numeric-table" id="tableSgcEpisodes"></table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="sub-eng-pav" class="subtab-panel">
+          <div class="charts-2col">
+            <div class="card">
+              <div class="card-header"><h3>Pavimentos: TMAP Anual (Shell/INVIAS) y Temperatura 7 Días Calientes</h3></div>
+              <div id="chart7DayTemp" class="chart-box"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Desglose Mensual de Ponderación Térmica Shell (TMAP / Carta W) y PMA</h3></div>
+              <div class="table-wrap max-h-320">
+                <table class="data-table numeric-table" id="tableTmapMonthly"></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: STANDALONE MONTHLY THORNTHWAITE -->
+    <section id="tab-thornthwaite" class="tab-panel">
+      <div class="two-col-asymmetric">
+        <div class="card">
+          <div class="card-header">
+            <h3>Calculadora Mensual de Índice de Thornthwaite</h3>
+            <div class="btn-row">
+              <button class="btn btn-xs btn-ghost" id="btnTwPresetPopayan">Popayán</button>
+              <button class="btn btn-xs btn-ghost" id="btnTwPresetBogota">Bogotá</button>
+              <button class="btn btn-xs btn-ghost" id="btnTwPresetBarranquilla">Barranquilla</button>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="field">
+              <label>Latitud (° decimal)</label>
+              <input type="number" id="twLat" value="2.45" step="0.01" min="-60" max="60" />
+            </div>
+            <div class="field">
+              <label>Reserva Máx. Agua Suelo (mm)</label>
+              <input type="number" id="twReserve" value="100" step="5" min="10" max="500" />
+            </div>
+          </div>
+          <div class="table-wrap" style="margin-top:10px">
+            <table class="data-table" id="twInputTable">
+              <thead>
+                <tr>
+                  <th>Mes</th>
+                  <th>Precipitación (mm)</th>
+                  <th>Temp. Media (°C)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="card-footer-cta">
+            <button class="btn btn-primary full-width" id="btnCalcMonthlyTw">Calcular Índice de Thornthwaite</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="kpi-grid" id="twKpiStrip"></div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-header"><h3>Balance Hídrico Mensual (Thornthwaite 1948)</h3></div>
+            <div id="chartTwStandalone" class="chart-box"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Resultados Detallados</h3></div>
+            <div class="table-wrap">
+              <table class="data-table numeric-table" id="tableTwResults"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: DATA BRIDGE & EDITOR -->
+    <section id="tab-bridge" class="tab-panel">
+      <div class="bridge-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3>1. Puente en Vivo (Datos Abiertos Colombia + Open-Meteo + NASA POWER)</h3>
+          </div>
+          <p class="hint">Sincroniza observaciones actualizadas de estaciones oficiales y redes de terceros (<code>datos.gov.co</code>) y completa radiación solar, humedad y viento mediante modelos satelitales y de reanálisis.</p>
+          <div class="form-grid-2">
+            <div class="field full">
+              <label>Estaciones a sincronizar (códigos separados por coma, o usar las del proyecto)</label>
+              <div class="input-with-btn">
+                <input type="text" id="syncStationCodes" value="21205791,21205580" />
+                <button class="btn btn-xs btn-ghost" id="btnUseProjectStationsSync">Usar Proyecto</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Año Inicial</label>
+              <input type="number" id="syncStartYear" value="2024" min="1940" max="2030" />
+            </div>
+            <div class="field">
+              <label>Año Final</label>
+              <input type="number" id="syncEndYear" value="2026" min="1940" max="2030" />
+            </div>
+            <div class="field full checkbox-col">
+              <label class="checkbox-inline"><input type="checkbox" id="syncProvIdeam" checked /> Datos Abiertos Colombia (datos.gov.co — con puente automático a estación `- AUT` cercana)</label>
+              <label class="checkbox-inline"><input type="checkbox" id="syncProvOpenMeteo" checked /> Open-Meteo ERA5 (Lluvia, Temp, HR, Viento, Brillo Solar, Radiación Solar)</label>
+              <label class="checkbox-inline"><input type="checkbox" id="syncProvNasa" /> NASA POWER Satellite Daily (Radiación Solar y reanálisis)</label>
+              <label class="checkbox-inline"><input type="checkbox" id="syncUpdateCatalog" /> Actualizar también el Catálogo Nacional de Estaciones (hp9r-jxuu)</label>
+            </div>
+          </div>
+          <div class="card-footer-cta">
+            <button class="btn btn-accent full-width" id="btnRunLiveSync">Sincronizar Datos en Vivo</button>
+          </div>
+          <pre class="log-box" id="syncLogBox">Listo para sincronizar.</pre>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>2. Importador de Archivos Históricos (.zip / .rar / SHC)</h3>
+          </div>
+          <p class="hint">Importa lotes históricos desde archivos binarios comprimidos (<code>.zip</code>, <code>.rar</code> o carpetas <code>SHC/</code>) hacia el almacenamiento SQLite local.</p>
+          <div class="form-grid-2">
+            <div class="field full">
+              <label>Ruta local al archivo .zip, .rar o carpeta SHC</label>
+              <input type="text" id="legacySourcePath" placeholder="Ej: D:\Antigravity\Clima\Instalador-Clima.zip" />
+            </div>
+            <div class="field">
+              <label>Desde Año (opcional)</label>
+              <input type="number" id="legacyYearMin" placeholder="Ej: 1990" />
+            </div>
+            <div class="field">
+              <label>Hasta Año (opcional)</label>
+              <input type="number" id="legacyYearMax" placeholder="Ej: 2025" />
+            </div>
+            <div class="field full">
+              <label>Filtrar códigos de estación (vacío = importar TODAS las estaciones)</label>
+              <input type="text" id="legacyStationFilter" placeholder="Vacío para importar la colección completa" />
+            </div>
+          </div>
+          <div class="progress-wrap" id="legacyProgressWrap" style="display:none">
+            <div class="progress-bar"><div class="progress-fill" id="legacyProgressFill"></div></div>
+            <div class="progress-msg" id="legacyProgressMsg">Iniciando...</div>
+          </div>
+          <div class="card-footer-cta">
+            <button class="btn btn-primary full-width" id="btnRunLegacyImport">Importar Colección Histórica</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>3. Importar Descarga IDEAM DHIME (CSV / Excel)</h3>
+          </div>
+          <p class="hint">Carga archivos CSV o XLSX descargados desde <code>dhime.ideam.gov.co</code> con detección automática de columnas, formato regional y variables.</p>
+          <div class="form-grid-2">
+            <div class="field">
+              <label>Estación por defecto (si no viene en columna)</label>
+              <input type="text" id="dhimeDefaultStn" placeholder="Ej: 21205791" />
+            </div>
+            <div class="field">
+              <label>Variable por defecto (si no viene en columna)</label>
+              <select id="dhimeDefaultVar"><option value="">Detectar automáticamente</option></select>
+            </div>
+            <div class="field full">
+              <label>Archivo DHIME (.csv, .xlsx)</label>
+              <input type="file" id="dhimeFileInput" accept=".csv,.xlsx,.xls" />
+            </div>
+          </div>
+          <div class="card-footer-cta">
+            <button class="btn btn-secondary full-width" id="btnImportDhime">Procesar e Importar DHIME</button>
+          </div>
+          <div class="hint" id="dhimeStatusMsg"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>4. Editor de Serie Histórica (Matriz 12 × 31)</h3>
+          </div>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Estación</label>
+              <input type="text" id="editStationCode" value="21205791" />
+            </div>
+            <div class="field">
+              <label>Variable</label>
+              <select id="editVarId"></select>
+            </div>
+            <div class="field">
+              <label>Año</label>
+              <input type="number" id="editYear" value="2024" min="1900" max="2035" />
+            </div>
+          </div>
+          <div class="btn-row" style="margin:8px 0">
+            <button class="btn btn-xs btn-secondary" id="btnLoadMatrix">Cargar Matriz</button>
+            <button class="btn btn-xs btn-primary" id="btnSaveMatrix">Guardar Cambios (Manual)</button>
+            <span class="hint" id="matrixMetaInfo"></span>
+          </div>
+          <div class="table-wrap max-h-260">
+            <table class="data-table matrix-table" id="matrixEditorTable"></table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>Historial de Sincronizaciones e Importaciones</h3></div>
+        <div class="table-wrap max-h-220">
+          <table class="data-table" id="tableSyncHistory"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: EXPORTS -->
+    <section id="tab-exports" class="tab-panel">
+      <div class="exports-grid">
+        <div class="export-card">
+          <div class="export-icon">PDF</div>
+          <h4>Informe Técnico Completo (.pdf)</h4>
+          <p>Documento multipágina sin desbordes de texto: TMAP y PMA, clasificaciones Caldas-Lang/Holdridge/Köppen/ENA, balance hídrico, Pettitt &amp; ETCCDI, curvas IDF, tabla RAS/INVIAS y gráficas estilo publicación.</p>
+          <button class="btn btn-primary full-width export-btn" data-fmt="pdf">Descargar PDF</button>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">DOCX</div>
+          <h4>Informe Técnico Editable (.docx)</h4>
+          <p>Documento Microsoft Word totalmente editable con todas las tablas normativas, TMAP/PMA y figuras científicas incrustadas en alta resolución.</p>
+          <button class="btn btn-primary full-width export-btn" data-fmt="docx">Descargar Word (.docx)</button>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">XLSX</div>
+          <h4>Libro Excel Formulado (.xlsx)</h4>
+          <p>10 hojas técnicas con <strong>fórmulas vivas</strong> (TMAP Shell Carta W, PMA, región INVIAS R1–R6, índices de calor y aridez, curvas IDF, hietograma, INDEX/MATCH RAS, SGC y RUSLE) y 3 gráficos nativos incrustados.</p>
+          <button class="btn btn-primary full-width export-btn" data-fmt="xlsx">Descargar Excel (.xlsx)</button>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">IDF / SWMM</div>
+          <h4>Hietograma de Tormenta (.csv)</h4>
+          <p>Hietograma de Bloques Alternos listo para importar directamente en EPA SWMM, HEC-HMS o planillas hidráulicas.</p>
+          <button class="btn btn-secondary full-width export-btn" data-fmt="csv_hyetograph">Descargar Hietograma (.csv)</button>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">MEPDG</div>
+          <h4>AASHTOWare MEPDG XML &amp; TXT</h4>
+          <p>Archivo <code>&lt;ClimateObject&gt;</code> XML y tabla tabulada <code>_mepdg.txt</code> para diseño mecanístico-empírico de pavimentos.</p>
+          <div class="btn-row">
+            <button class="btn btn-secondary export-btn" data-fmt="mepdg_xml">XML MEPDG</button>
+            <button class="btn btn-secondary export-btn" data-fmt="mepdg_txt">_mepdg.txt</button>
+          </div>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">GIS</div>
+          <h4>Capas GIS (GeoJSON &amp; KML)</h4>
+          <p>Exporta estaciones ponderadas y corredor del proyecto para plataformas SIG estándar y Google Earth Pro.</p>
+          <div class="btn-row">
+            <button class="btn btn-secondary export-btn" data-fmt="geojson">GeoJSON</button>
+            <button class="btn btn-secondary export-btn" data-fmt="kml">KML</button>
+          </div>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">PNG</div>
+          <h4>Figuras Científicas HD (240 DPI)</h4>
+          <p>Descarga gráficas científicas individuales de alta resolución (240 DPI) para anexos técnicos y memorias de cálculo.</p>
+          <div class="btn-grid-2">
+            <button class="btn btn-xs btn-ghost export-btn" data-fmt="png_climograph">Climograma</button>
+            <button class="btn btn-xs btn-ghost export-btn" data-fmt="png_balance">Balance Hídrico</button>
+            <button class="btn btn-xs btn-ghost export-btn" data-fmt="png_trends">Tendencias</button>
+            <button class="btn btn-xs btn-ghost export-btn" data-fmt="png_idf">Curvas IDF</button>
+            <button class="btn btn-xs btn-ghost export-btn" data-fmt="png_hyetograph">Hietograma</button>
+            <button class="btn btn-xs btn-ghost export-btn" data-fmt="png_sgc_thresholds">Umbral SGC</button>
+            <button class="btn btn-xs btn-ghost export-btn" data-fmt="png_spei_drought">SPEI y RUSLE</button>
+          </div>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">TXT / HCLIM</div>
+          <h4>Reporte Texto &amp; Archivo Proyecto</h4>
+          <p>Reporte tabular en texto plano <code>Reporte.txt</code> y definición de proyecto portable <code>.hclim</code>.</p>
+          <div class="btn-row">
+            <button class="btn btn-ghost export-btn" data-fmt="txt">Reporte.txt</button>
+            <button class="btn btn-ghost export-btn" data-fmt="hclim">Proyecto .hclim</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- WORKBENCH STATUSBAR -->
+  <footer class="statusbar">
+    <div class="statusbar-left">
+      <span id="sbProfile">Enfoque: <strong>Integral</strong></span>
+      <span id="sbMethod">ETP: <strong>Penman-Monteith</strong> | IDF: <strong>INVIAS</strong></span>
+      <span id="sbResultMeta">Sin análisis ejecutado aún</span>
+    </div>
+    <div class="statusbar-right">
+      <span id="sbStations">Estaciones en proyecto: <strong>0</strong></span>
+      <span id="sbEngineState">Motor local listo</span>
+    </div>
+  </footer>
+
+  <!-- MODAL DE PROYECTOS -->
+  <div class="modal-backdrop" id="projectsModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Proyectos Guardados y Ejemplos</h3>
+        <button class="btn btn-xs btn-ghost" id="btnCloseProjects">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="btn-row" style="margin-bottom:12px">
+          <label class="btn btn-sm btn-secondary file-btn">
+            Importar Proyecto (.hclim)
+            <input type="file" id="inputImportCli" accept=".hclim,.json,.cli" hidden />
+          </label>
+        </div>
+        <div id="projectsListContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETALLE DE ESTACIÓN -->
+  <div class="modal-backdrop" id="stationModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="stationModalTitle">Detalle de Estación</h3>
+        <button class="btn btn-xs btn-ghost" id="btnCloseStationModal">✕</button>
+      </div>
+      <div class="modal-body" id="stationModalBody"></div>
+    </div>
+  </div>
+
+  <!-- MODAL CENTRO DE AYUDA Y REFERENCIA TÉCNICA (F1) -->
+  <div class="modal-backdrop" id="helpModal" style="display:none">
+    <div class="modal modal-help">
+      <div class="modal-header">
+        <h3><img class="help-modal-logo" src="/static/logo_mark_light.png" alt="" /> Centro de Ayuda, Fórmulas y Manuales — HidroClima Studio v1.0.0</h3>
+        <button type="button" class="btn btn-xs btn-ghost" id="btnCloseHelpModal">✕</button>
+      </div>
+      <div class="help-layout">
+        <aside class="help-sidebar">
+          <div class="help-search-wrap">
+            <input type="text" id="helpSearchInput" placeholder="Buscar módulo, fórmula, norma..." />
+          </div>
+          <div class="help-nav-scroll" id="helpTopicNav"></div>
+          <div class="help-pdf-footer">
+            <div class="help-nav-cat">Manuales Oficiales PDF</div>
+            <button type="button" class="btn btn-xs btn-ghost" data-menu-act="pdf_general">📕 01. Información General</button>
+            <button type="button" class="btn btn-xs btn-ghost" data-menu-act="pdf_tutorial">📕 02. Tutorial y Casos</button>
+            <button type="button" class="btn btn-xs btn-ghost" data-menu-act="pdf_scientific">📕 03. Manual Científico</button>
+            <button type="button" class="btn btn-xs btn-ghost" data-menu-act="pdf_reference">📕 04. Referencia y Verif.</button>
+          </div>
+        </aside>
+        <section class="help-main" id="helpContentPane"></section>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/vendor/leaflet.js"></script>
+  <script src="/static/vendor/leaflet.markercluster.js"></script>
+  <script src="/static/vendor/echarts.min.js"></script>
+  <script src="/static/js/map.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/tables.js"></script>
+  <script src="/static/js/help.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
